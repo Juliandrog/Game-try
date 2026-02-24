@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bot Spotter — Click the Red Flags</title>
+    <style>
+      :root {
+        --bg: #f5f1ea;
+        --card: #fff8ef;
+        --ink: #1f1a16;
+        --muted: #6b5f55;
+        --accent: #d76a2d;
+        --accent-2: #1f6f5c;
+        --bad: #b3261e;
+        --good: #2e7d32;
+        --shadow: 0 12px 30px rgba(31, 26, 22, 0.12);
+        --radius: 18px;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+        background: radial-gradient(circle at top left, #fff1dc 0%, #f5f1ea 55%, #efe7dc 100%);
+        color: var(--ink);
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 20px 60px;
+      }
+
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .title {
+        font-size: clamp(26px, 4vw, 38px);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        max-width: 520px;
+        line-height: 1.5;
+      }
+
+      .scoreboard {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        box-shadow: var(--shadow);
+        display: grid;
+        gap: 6px;
+        min-width: 220px;
+      }
+
+      .scoreboard span {
+        font-weight: 600;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr);
+        gap: 24px;
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 20px;
+      }
+
+      .account-header {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .avatar {
+        width: 92px;
+        height: 92px;
+        border-radius: 22px;
+        background: linear-gradient(140deg, #f5c7a1, #d78a4f);
+        display: grid;
+        place-items: center;
+        color: #33241a;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .avatar.ai {
+        background: linear-gradient(145deg, #d7f2ff, #8ad1f5);
+      }
+
+      .avatar.none {
+        background: #e3d9cd;
+        color: #7d6b5b;
+      }
+
+      .handle {
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .bio {
+        margin-top: 8px;
+        line-height: 1.5;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin: 16px 0 20px;
+      }
+
+      .stat {
+        background: #fff;
+        border-radius: 14px;
+        padding: 10px 12px;
+        text-align: center;
+        border: 1px solid #eadfd0;
+      }
+
+      .stat h4 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .stat p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .posts {
+        display: grid;
+        gap: 12px;
+      }
+
+      .post {
+        border-radius: 14px;
+        background: #fff;
+        border: 1px solid #eadfd0;
+        padding: 12px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .post-top {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .post-body {
+        display: grid;
+        grid-template-columns: 70px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+      }
+
+      .post-thumb {
+        width: 70px;
+        height: 70px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #f9e4d0, #e5b48a);
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        color: #5c4633;
+        text-align: center;
+        padding: 6px;
+      }
+
+      .post-thumb.stolen {
+        background: linear-gradient(135deg, #ffd8d8, #f3a0a0);
+      }
+
+      .comments {
+        margin-top: 8px;
+        display: grid;
+        gap: 6px;
+        font-size: 13px;
+      }
+
+      .comment {
+        background: #f7efe4;
+        border-radius: 10px;
+        padding: 6px 10px;
+      }
+
+      .sidebar {
+        display: grid;
+        gap: 16px;
+      }
+
+      .flag-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .flag {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 8px 10px;
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #eadfd0;
+      }
+
+      .flag .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #d8c9bb;
+      }
+
+      .flag.found .dot {
+        background: var(--good);
+      }
+
+      .flag.found {
+        border-color: #bfe0c1;
+        background: #f2fbf4;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: none;
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        background: var(--accent);
+        color: white;
+      }
+
+      button.secondary {
+        background: #efe3d6;
+        color: #4a3b2f;
+      }
+
+      .message {
+        min-height: 22px;
+        font-size: 14px;
+      }
+
+      .message.good { color: var(--good); }
+      .message.bad { color: var(--bad); }
+
+      .clickable {
+        position: relative;
+        border-radius: 10px;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+      }
+
+      .clickable:hover {
+        box-shadow: 0 0 0 2px rgba(215, 106, 45, 0.25);
+        transform: translateY(-1px);
+      }
+
+      .clickable.found {
+        box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.45);
+        background: rgba(46, 125, 50, 0.08);
+      }
+
+      .clickable.miss {
+        box-shadow: 0 0 0 2px rgba(179, 38, 30, 0.45);
+      }
+
+      .chip {
+        display: inline-flex;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #f2e4d3;
+        color: #6b513b;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .link {
+        color: var(--accent-2);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div>
+          <div class="title">Bot Spotter</div>
+          <div class="subtitle">
+            Click the suspicious parts of the account card. Earn points for each red flag you find
+            and lose points for false alarms.
+          </div>
+        </div>
+        <div class="scoreboard">
+          <div>Account: <span id="accountIndex">1</span>/<span id="accountTotal">1</span></div>
+          <div>Score: <span id="score">0</span></div>
+          <div>Found: <span id="found">0</span>/<span id="totalFlags">0</span></div>
+        </div>
+      </header>
+
+      <div class="layout">
+        <section class="card" id="accountCard"></section>
+        <aside class="sidebar">
+          <div class="card">
+            <h3>Red Flags</h3>
+            <p class="meta">Click items on the profile to mark them found.</p>
+            <div class="flag-list" id="flagList"></div>
+          </div>
+          <div class="card">
+            <h3>Controls</h3>
+            <div class="controls">
+              <button id="nextBtn">Next Account</button>
+              <button class="secondary" id="resetBtn">Reset Account</button>
+            </div>
+            <p class="message" id="message"></p>
+            <p class="meta">
+              Scoring: +10 for correct, -5 for incorrect. Clicking a found flag does nothing.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <script type="application/json" id="accounts-data">
+      {
+        "accounts": [
+          {
+            "name": "Nova Venture",
+            "handle": "user4837291xyz",
+            "created": "Created 6 days ago",
+            "avatar": "ai",
+            "bio": "Crypto investor 🚀 DM for collab — top signals!",
+            "bioLink": "bit.ly/fastreturns",
+            "followers": 23,
+            "following": 5023,
+            "posts": 2,
+            "likesPerPost": 1,
+            "postsList": [
+              {
+                "date": "Today",
+                "caption": "Market moves of the day",
+                "imageLabel": "Stolen photo",
+                "stolen": true,
+                "comments": ["Nice pic 🔥", "DM me for promotion", "Check my page"]
+              },
+              {
+                "date": "Today",
+                "caption": "Top 5 coins to watch",
+                "imageLabel": "Stock image",
+                "stolen": true,
+                "comments": ["Nice pic 🔥", "Great post!"]
+              }
+            ],
+            "suspiciousFlags": [
+              "avatar",
+              "handle",
+              "created",
+              "bio",
+              "bioLink",
+              "ratio",
+              "lowPosts",
+              "sameDayPosts",
+              "lowEngagement",
+              "spamComments",
+              "stolenContent"
+            ]
+          },
+          {
+            "name": "Clara Hart",
+            "handle": "clara.h",
+            "created": "Created 4 years ago",
+            "avatar": "none",
+            "bio": "Lifestyle vibes | Travel | DM for collab",
+            "bioLink": "",
+            "followers": 51000,
+            "following": 120,
+            "posts": 1,
+            "likesPerPost": 3,
+            "postsList": [
+              {
+                "date": "3 hours ago",
+                "caption": "Sunset in Capri",
+                "imageLabel": "Beautiful view",
+                "stolen": false,
+                "comments": ["Check my page", "Wow!", "DM me for promotion"]
+              }
+            ],
+            "suspiciousFlags": [
+              "avatar",
+              "bio",
+              "lowPosts",
+              "lowEngagement",
+              "spamComments"
+            ]
+          },
+          {
+            "name": "Daily Nature",
+            "handle": "daily.nature",
+            "created": "Created 2 months ago",
+            "avatar": "stock",
+            "bio": "Sharing nature photography",
+            "bioLink": "",
+            "followers": 340,
+            "following": 980,
+            "posts": 3,
+            "likesPerPost": 6,
+            "postsList": [
+              {
+                "date": "Jan 4",
+                "caption": "Forest calm",
+                "imageLabel": "Forest",
+                "stolen": false,
+                "comments": ["Beautiful", "Love this"]
+              },
+              {
+                "date": "Jan 4",
+                "caption": "Ocean mist",
+                "imageLabel": "Ocean",
+                "stolen": false,
+                "comments": ["Nice pic 🔥", "Great"]
+              },
+              {
+                "date": "Jan 4",
+                "caption": "Mountain air",
+                "imageLabel": "Mountains",
+                "stolen": false,
+                "comments": ["Nice pic 🔥", "Check my page"]
+              }
+            ],
+            "suspiciousFlags": [
+              "avatar",
+              "created",
+              "ratio",
+              "sameDayPosts",
+              "spamComments"
+            ]
+          }
+        ],
+        "flagLabels": {
+          "avatar": "No profile photo or stock/AI image",
+          "handle": "Random letters/numbers in username",
+          "created": "Very new account",
+          "bio": "Minimal or overly generic bio",
+          "bioLink": "Bio contains spammy link",
+          "ratio": "Very high following, very low followers",
+          "lowPosts": "No posts or only 1–3 low-quality posts",
+          "sameDayPosts": "Posts all uploaded on the same day",
+          "lowEngagement": "Engagement doesn't match follower count",
+          "spamComments": "Repetitive or unrelated comments",
+          "stolenContent": "Posts use stolen content"
+        }
+      }
+    </script>
+
+    <script>
+      const data = JSON.parse(document.getElementById("accounts-data").textContent);
+      const accounts = data.accounts;
+      const flagLabels = data.flagLabels;
+
+      let currentIndex = 0;
+      let score = 0;
+      let foundFlags = new Set();
+
+      const accountCard = document.getElementById("accountCard");
+      const flagList = document.getElementById("flagList");
+      const scoreEl = document.getElementById("score");
+      const foundEl = document.getElementById("found");
+      const totalFlagsEl = document.getElementById("totalFlags");
+      const accountIndexEl = document.getElementById("accountIndex");
+      const accountTotalEl = document.getElementById("accountTotal");
+      const messageEl = document.getElementById("message");
+
+      document.getElementById("nextBtn").addEventListener("click", () => {
+        currentIndex = (currentIndex + 1) % accounts.length;
+        resetAccount();
+      });
+
+      document.getElementById("resetBtn").addEventListener("click", () => {
+        resetAccount();
+      });
+
+      function resetAccount() {
+        foundFlags = new Set();
+        messageEl.textContent = "";
+        renderAccount();
+      }
+
+      function renderAccount() {
+        const account = accounts[currentIndex];
+        accountIndexEl.textContent = currentIndex + 1;
+        accountTotalEl.textContent = accounts.length;
+        totalFlagsEl.textContent = account.suspiciousFlags.length;
+        foundEl.textContent = foundFlags.size;
+
+        accountCard.innerHTML = `
+          <div class="account-header">
+            <div class="avatar ${account.avatar}" data-flag-id="avatar">
+              ${account.avatar === "none" ? "NO" : "AI"}
+            </div>
+            <div>
+              <div class="handle clickable" data-flag-id="handle">${account.handle}</div>
+              <div class="meta clickable" data-flag-id="created">${account.created}</div>
+              <div class="bio clickable" data-flag-id="bio">${account.bio}</div>
+              ${account.bioLink ? `<div class="meta clickable" data-flag-id="bioLink"><span class="link">${account.bioLink}</span></div>` : ""}
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat clickable" data-flag-id="ratio">
+              <h4>${account.following.toLocaleString()}</h4>
+              <p>Following</p>
+            </div>
+            <div class="stat">
+              <h4>${account.followers.toLocaleString()}</h4>
+              <p>Followers</p>
+            </div>
+            <div class="stat clickable" data-flag-id="lowPosts">
+              <h4>${account.posts}</h4>
+              <p>Posts</p>
+            </div>
+          </div>
+
+          <div class="meta clickable" data-flag-id="lowEngagement">
+            Avg likes per post: ${account.likesPerPost}
+          </div>
+
+          <div class="posts">
+            ${account.postsList
+              .map(
+                (post) => `
+                  <div class="post">
+                    <div class="post-top clickable" data-flag-id="sameDayPosts">
+                      <span>${post.date}</span>
+                      <span class="chip">${account.name}</span>
+                    </div>
+                    <div class="post-body">
+                      <div class="post-thumb ${post.stolen ? "stolen" : ""} clickable" data-flag-id="stolenContent">
+                        ${post.imageLabel}
+                      </div>
+                      <div>
+                        <div>${post.caption}</div>
+                        <div class="comments clickable" data-flag-id="spamComments">
+                          ${post.comments.map((c) => `<div class="comment">${c}</div>`).join("")}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `
+              )
+              .join("")}
+          </div>
+        `;
+
+        attachClickHandlers(account);
+        renderFlagList(account);
+      }
+
+      function renderFlagList(account) {
+        flagList.innerHTML = account.suspiciousFlags
+          .map((flagId) => {
+            const found = foundFlags.has(flagId);
+            return `
+              <div class="flag ${found ? "found" : ""}" data-flag-ref="${flagId}">
+                <div class="dot"></div>
+                <div>${flagLabels[flagId] || flagId}</div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function attachClickHandlers(account) {
+        accountCard.querySelectorAll("[data-flag-id]").forEach((el) => {
+          el.classList.add("clickable");
+          el.addEventListener("click", () => handleClick(el, account));
+        });
+      }
+
+      function handleClick(element, account) {
+        const flagId = element.dataset.flagId;
+        const isSuspicious = account.suspiciousFlags.includes(flagId);
+        if (foundFlags.has(flagId)) {
+          return;
+        }
+
+        if (isSuspicious) {
+          foundFlags.add(flagId);
+          score += 10;
+          element.classList.add("found");
+          messageEl.textContent = `Correct: ${flagLabels[flagId]}`;
+          messageEl.className = "message good";
+        } else {
+          score -= 5;
+          messageEl.textContent = "Not a red flag. -5 points";
+          messageEl.className = "message bad";
+          element.classList.add("miss");
+          setTimeout(() => element.classList.remove("miss"), 400);
+        }
+
+        scoreEl.textContent = score;
+        foundEl.textContent = foundFlags.size;
+        renderFlagList(account);
+
+        if (foundFlags.size === account.suspiciousFlags.length) {
+          messageEl.textContent = "All red flags found!";
+          messageEl.className = "message good";
+        }
+      }
+
+      renderAccount();
+    </script>
+  </body>
+</html>
